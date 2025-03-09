@@ -22,28 +22,30 @@ class InsuranceEDA:
         print(missing_values[missing_values > 0])
     
     def handle_missing_values(self):
-        """Handle missing values in the dataset."""
-        missing_values = self.df.isnull().sum()
-        missing_cols = missing_values[missing_values > 0].index.tolist()
+      """Handle missing values in the dataset."""
+      missing_values = self.df.isnull().sum()
+      missing_cols = missing_values[missing_values > 0].index.tolist()
+      #print("missing col are"+missing_cols)
+      if not missing_cols:
+        print("\nNo missing values detected.")
+        return
 
-        if not missing_cols:
-            print("\nNo missing values detected.")
-            return
-        
-        print("\nHandling Missing Values:")
-        
-        for col in missing_cols:
+      print("\nHandling Missing Values:")
 
-            if self.df[col].isnull().sum() > len(self.df) * 0.5:
-               self.df.drop(columns=[col], inplace=True)  # Drop column if more than 50% missing
+      for col in missing_cols:
+        if col not in self.df.columns:
+            print(f"Warning: Column '{col}' not found in dataset. Skipping...")
+            continue  # Skip missing columns to prevent KeyError
 
+        if self.df[col].dtype == 'object':  # Categorical column
+            self.df[col].fillna(self.df[col].mode().iloc[0], inplace=True)  # Fill with mode
+        elif np.issubdtype(self.df[col].dtype, np.number):  # Numerical column
+            self.df[col].fillna(self.df[col].median(), inplace=True)  # Fill with median
+        else:
+            print(f"Skipping column {col}, unsupported data type: {self.df[col].dtype}")
 
-            if self.df[col].dtype == 'object':  # Categorical column
-                self.df[col].fillna(self.df[col].mode()[0], inplace=True)  # Fill with mode
-            elif np.issubdtype(self.df[col].dtype, np.number):  # Numerical column
-              self.df[col].fillna(self.df[col].median(), inplace=True)  # Fill with median
-        
-        print("\nMissing values handled successfully.")
+    print("\nMissing values handled successfully.")
+
     
     def convert_dates(self, date_columns):
         """Convert specified columns to datetime format."""
@@ -97,9 +99,11 @@ class InsuranceEDA:
             sns.histplot(self.df[col], bins=30, kde=True)
             plt.title(f'Distribution of {col}')
             plt.show()
+    
+
         
         for col in cat_columns:
-            plt.figure(figsize=(6, 4))
+            plt.figure(figsize=(8, 6))
             sns.countplot(data=self.df, x=col, order=self.df[col].value_counts().index)
             plt.title(f'Bar Chart of {col}')
             plt.xticks(rotation=45)
@@ -122,7 +126,7 @@ class InsuranceEDA:
             sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
             plt.title("Correlation Matrix")
             plt.show()
-    
+
     def run_eda(self):
         """Run all EDA steps."""
         self.display_info()
@@ -133,7 +137,7 @@ class InsuranceEDA:
         self.check_outliers(['TotalPremium', 'TotalClaims', 'SumInsured', 'CalculatedPremiumPerTerm'])
         detected_cat_columns = self.detect_categorical_columns()
         self.convert_categorical(detected_cat_columns)
-        self.plot_distributions(['TotalPremium', 'TotalClaims', 'SumInsured', 'CalculatedPremiumPerTerm'], detected_cat_columns)
+        self.self.detect_categorical_columns()
         self.correlation_analysis()
         print("\nEDA completed.")
 
