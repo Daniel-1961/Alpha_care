@@ -76,15 +76,40 @@ def ab_test_zip(df):
  ## Hypothesis 3: Profit margin differences between zip codes
    df['ProfitMargin'] = df['TotalPremium'] - df['TotalClaims']
    print("✅ Profit Margin calculated and added to the dataset.")
-   if 'ZipCode' in df.columns and 'ProfitMargin' in df.columns:
-        zip_codes = df['ZipCode'].unique()
+   if 'Province' in df.columns and 'ProfitMargin' in df.columns:
+        zip_codes = df['Province'].unique()
         if len(zip_codes) > 1:
             print("\nTesting Profit Margin Differences Between Zip Codes:")
             for i in range(len(zip_codes)):
                 for j in range(i + 1, len(zip_codes)):
-                    group_A = df[df['ZipCode'] == zip_codes[i]]['ProfitMargin']
-                    group_B = df[df['ZipCode'] == zip_codes[j]]['ProfitMargin']
+                    group_A = df[df['Province'] == zip_codes[i]]['ProfitMargin']
+                    group_B = df[df['Province'] == zip_codes[j]]['ProfitMargin']
                     print(f"\nComparing {zip_codes[i]} vs {zip_codes[j]}:")
-                    ab_test_numeric(group_A, group_B, "Profit Margin Between Zip Codes")
+                    ab_test_numeric(group_A, group_B, "Profit Margin Between province Codes")
    else:
        print("Zip_code doesn't Exit in the datase")
+def ab_risk_zip(df):
+  ## Hypothesis 2: Risk differences between zip codes
+    if 'ZipCode' in df.columns and 'TotalClaims' in df.columns:
+        zip_codes = df['ZipCode'].unique()
+        if len(zip_codes) > 1:
+            print("\nTesting Risk Differences Between Zip Codes:")
+            for i in range(len(zip_codes)):
+                for j in range(i + 1, len(zip_codes)):
+                    group_A = df[df['ZipCode'] == zip_codes[i]]['TotalClaims']
+                    group_B = df[df['ZipCode'] == zip_codes[j]]['TotalClaims']
+                    print(f"\nComparing {zip_codes[i]} vs {zip_codes[j]}:")
+                    ab_test_numeric(group_A, group_B, "Total Claims Between Zip Codes")
+def ab_risk_gen(df):
+ ## Hypothesis 4: Risk differences between Women and Men
+    if 'Gender' in df.columns and 'TotalClaims' in df.columns:
+        genders = ['Male','Female']
+        if len(genders) > 1:  # Assuming only 'Male' and 'Female'
+            print("\nTesting Risk Differences Between Genders:")
+            group_A = df[df['Gender'] == genders[0]]['TotalClaims']
+            group_B = df[df['Gender'] == genders[1]]['TotalClaims']
+            print(f"\nComparing {genders[0]} vs {genders[1]}:")
+            ab_test_numeric(group_A, group_B, "Total Claims Between Genders")
+
+    print("\n✅ A/B Testing Completed.")
+  
