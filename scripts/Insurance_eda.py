@@ -108,25 +108,14 @@ class InsuranceEDA:
             plt.title(f'Bar Chart of {col}')
             plt.xticks(rotation=45)
             plt.show()
-    
-    def correlation_analysis(self):
-        """Analyze correlation between TotalPremium and TotalClaims with ZipCode."""
-        if 'TotalPremium' in self.df.columns and 'TotalClaims' in self.df.columns and 'PostalCode' in self.df.columns:
-            plt.figure(figsize=(6, 4))
-            sns.scatterplot(x=self.df['TotalPremium'], y=self.df['TotalClaims'], hue=self.df['PostalCode'], alpha=0.6)
-            plt.title("Total Premium vs Total Claims by ZipCode")
-            plt.xlabel("Total Premium")
-            plt.ylabel("Total Claims")
-            plt.legend(title="ZipCode", bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.show()
-            
-            # Correlation matrix
-            correlation_matrix = self.df[['TotalPremium', 'TotalClaims']].corr()
-            plt.figure(figsize=(5, 4))
-            sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
-            plt.title("Correlation Matrix")
-            plt.show()
-
+    def correlation_matrix(self):
+     """Plots the correlation matrix as a heatmap"""
+     numerical_df =self.df.select_dtypes(include=['number'])  # Select only numerical columns
+     correlation_matrix = numerical_df.corr()
+     plt.figure(figsize=(12, 8))
+     sns.heatmap(correlation_matrix, annot=True, fmt=".2f", cmap="coolwarm", linewidths=0.5)
+     plt.title("Correlation Matrix")
+     plt.show()
     def run_eda(self):
         """Run all EDA steps."""
         self.display_info()

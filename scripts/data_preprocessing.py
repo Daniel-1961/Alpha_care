@@ -13,15 +13,31 @@ class DataPreprocessor:
         """Loads the dataset"""
         self.df = pd.read_csv(self.file_path)
 
-    def encode_categorical(self):
-        """Encodes categorical variables using One-Hot Encoding"""
-        categorical_cols = self.df.select_dtypes(include=['object']).columns
-        encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
-        encoded_features = encoder.fit_transform(self.df[categorical_cols])
-        encoded_df = pd.DataFrame(encoded_features, columns=encoder.get_feature_names_out(categorical_cols))
+    def encode_categorical(self, encoding_type="default"):
+     """Encodes categorical variables using Label Encoding, Frequency, or Target Encoding."""
+     for col in self.categorical_cols:
+        self.df[col] = self.df[col].fillna("Unknown")  # Handle missing values
+        unique_vals = self.df[col].nunique()
+
+        if unique_vals > self.high_cardinality_threshold:  # High-cardinality features
+            print(f"Encoding {col} using frequency encoding (high cardinality: {unique_vals} unique values)")
+            self.df[col] = self.df[col].map(self.df[col].value_counts(normalize=True))
         
-        self.df = self.df.drop(columns=categorical_cols)
-        self.df = pd.concat([self.df, encoded_df], axis=1)
+        elif encoding_type == "target" and unique_vals > 10:  # Use target encoding for high-cardinality
+            print(f"Encoding {col} using target encoding")
+            from category_encoders import TargetEncoder
+            target_encoder = TargetEncoder(cols=[col])
+            self.df[col] = target_encoder.fit_transform(self.df[col], self.df[self.target_variable])
+
+        elif encoding_type == "one-hot" and unique_vals < 10:  # Use one-hot for small cardinality
+            print(f"Encoding {col} using one-hot encoding")
+            self.df = pd.get_dummies(self.df, columns=[col], drop_first=True)
+        
+        else:  # Default low-cardinality behavior
+            print(f"Encoding {col} using Label Encoding (low cardinality: {unique_vals} unique values)")
+            from sklearn.preprocessing import OrdinalEncoder
+            ordinal_encoder = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+            self.df[col] = ordinal_encoder.fit_transform(self.df[[col]])
 
     def scale_features(self):
         """Scales numerical features using StandardScaler"""
@@ -34,6 +50,7 @@ class DataPreprocessor:
         X = self.df.drop(columns=[self.target_column])
         y = self.df[self.target_column]
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+        return self.X_train, self.X_test, self.y_train, self.y_test
 
     def preprocess(self):
         """Runs the entire preprocessing pipeline"""
