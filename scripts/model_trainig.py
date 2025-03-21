@@ -13,8 +13,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 class ModelTrainer:
     def __init__(self, X_train, X_test, y_train, y_test):
-        X_train=X_train.drop(['TransactionMonth'], axis=1)
-        X_test=X_test.drop(['TransactionMonth'], axis=1)
+    
         self.X_train = X_train
         self.X_test = X_test
         self.y_train = y_train
@@ -28,7 +27,7 @@ class ModelTrainer:
         """Evaluates model performance using regression metrics"""
         mae = mean_absolute_error(self.y_test, predictions)
         mse = mean_squared_error(self.y_test, predictions)
-        rmse = mean_squared_error(self.y_test, predictions, squared=False)
+        rmse = mean_squared_error(self.y_test, predictions)
         r2 = r2_score(self.y_test, predictions)
 
         logging.info(f"📊 Model Performance: {model_name}")
